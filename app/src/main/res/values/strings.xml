@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Android_03_FilesManager</string>
+    <string name="copy">Copy</string>
+    <string name="paste">Paste</string>
+    <string name="delete">Delete</string>
+    <string name="rename">Rename</string>
+    <string name="create_directory">Create Directory</string>
+</resources>
