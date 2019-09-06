@@ -6,6 +6,18 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/button_back"
+        android:text="Back"
+        android:onClick="backOnClick"/>
+
     <GridView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -16,5 +28,6 @@
         android:stretchMode="columnWidth"
         android:gravity="center"
         android:id="@+id/grid_view" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

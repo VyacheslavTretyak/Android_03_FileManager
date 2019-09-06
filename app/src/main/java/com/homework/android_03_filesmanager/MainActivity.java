@@ -3,7 +3,6 @@ package com.homework.android_03_filesmanager;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
-import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
@@ -12,27 +11,18 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.DatePicker;
-import android.widget.EditText;
 import android.widget.GridView;
-import android.widget.RadioButton;
-import android.widget.TextView;
 import android.widget.Toast;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,13 +31,15 @@ public class MainActivity extends AppCompatActivity {
     private int curItem = -1;
     private View curView = null;
     private FileAdapter adapter;
+    private ArrayList<FileView> listFiles;
+    private File path;
 
     public Bitmap directoryPic;
     public Bitmap filePic;
     public Bitmap txtFilePic;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -65,6 +57,18 @@ public class MainActivity extends AppCompatActivity {
 
         gridView = this.findViewById(R.id.grid_view);
         gridView.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
+        gridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                FileView selected = adapter.getItem(i);
+                path = selected.file;
+                if(path.isDirectory()){
+                    LoadFiles(path);
+                    adapter.notifyDataSetChanged();
+                }
+                return false;
+            }
+        });
 
         AlertDialog.Builder builder = new	AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert);
         builder.setMessage("Are you sure?");
@@ -77,7 +81,10 @@ public class MainActivity extends AppCompatActivity {
         builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-
+                File f = path.getParentFile();
+                if(f != null){
+                    path = f;
+                }
             }
         });
        AlertDialog dialog = builder.create();
@@ -89,18 +96,9 @@ public class MainActivity extends AppCompatActivity {
             esMainDir = Environment.getExternalStorageDirectory();
         }
 
-        ArrayList<FileView> listFiles = new ArrayList<>();
-        File[] arrFiles = esMainDir.listFiles();
-        if (arrFiles != null) {
-            for (File f : arrFiles){
-                if (f.isDirectory()) {
-                    listFiles.add(new FileView(f.getName(), directoryPic));
-                } else if(getFileExtension(f).equals("txt")){
-                    listFiles.add(new FileView(f.getName(), txtFilePic));
-                }else{
-                    listFiles.add(new FileView(f.getName(), filePic));
-                }
-            }
+        listFiles = new ArrayList<>();
+        if(esMainDir!= null){
+            LoadFiles(esMainDir);
         }  else  {
             Toast.makeText(this,"Directory is empty!",	Toast.LENGTH_SHORT).show();
         }
@@ -118,9 +116,32 @@ public class MainActivity extends AppCompatActivity {
                 MainActivity.this.curView.setBackgroundColor(Color.parseColor("#aEEEaE"));
             }
         });
+    }
 
+    private void LoadFiles(File file){
+        listFiles.clear();
+        File[] arrFiles = file.listFiles();
+        for (File f : arrFiles){
+            if (f.isDirectory()) {
+                listFiles.add(new FileView(f, directoryPic));
+            } else if(getFileExtension(f).equals("txt")){
+                listFiles.add(new FileView(f, txtFilePic));
+            }else{
+                listFiles.add(new FileView(f, filePic));
+            }
+        }
+    }
 
+    public void backOnClick(View view){
+        try {
+            path = path.getParentFile();
+            if(path!= null){
+                LoadFiles(path);
+                adapter.notifyDataSetChanged();
+            }
+        }catch (Exception ex){
 
+        }
     }
 
     private static String getFileExtension(File file) {
